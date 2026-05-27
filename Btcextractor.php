@@ -17,6 +17,10 @@ class Btcextractor extends BasePackage
 
     public function process()
     {
+        // ini_set('xdebug.var_display_max_children', -1); // Unlimited children (array elements/properties)
+        // ini_set('xdebug.var_display_max_data', -1);     // Unlimited string length
+        // ini_set('xdebug.var_display_max_depth', -1);    // Unlimited nesting depth
+
         //Increase Exectimeout to 5 hours as this process takes time to extract and merge data.
         if ((int) ini_get('max_execution_time') < 18000) {
             set_time_limit(18000);
@@ -667,21 +671,28 @@ class Btcextractor extends BasePackage
                                 $organisation['id'] = (int) $invoice['invdet']['companycd'];
                             }
                             $company = $companiesPackage->getFirst(by: 'reference', value: $invoice['invdet']['custcode'], returnArray: true);
+
                             if (!$company) {
                                 $company['id'] = (int) $invoice['invdet']['custcode'];
                             }
 
+                            $company = $companiesPackage->getCompany($company['id']);
+
                             $lrFirstArr =
                                 [
-                                    'id'                => $invoice['invdet']['lrno'],
-                                    'financial_year'    => $startYear . '-' . $endYear,
-                                    'invoice_no'        => $invoice['invdet']['invoiceno'],
-                                    'organisation_id'   => $organisation['id'],
-                                    'company_id'        => $company['id'],
-                                    'vehicle_id'        => ($vehicle && isset($vehicle['id'])) ? $vehicle['id'] : 0,
-                                    'date'              => $date->toDateString(),
-                                    'status'            => 1,
-                                    'archived'          => $archived
+                                    'id'                        => $invoice['invdet']['lrno'],
+                                    'financial_year'            => $startYear . '-' . $endYear,
+                                    'invoice_no'                => $invoice['invdet']['invoiceno'],
+                                    'organisation_id'           => $organisation['id'],
+                                    'company_id'                => $company['id'],
+                                    'from_company_id'           => $company['id'],
+                                    'to_company_id'             => $company['id'],
+                                    'from_company_address_id'   => $company['id'],
+                                    'to_company_address_id'     => $company['id'],
+                                    'vehicle_id'                => ($vehicle && isset($vehicle['id'])) ? $vehicle['id'] : 0,
+                                    'date'                      => $date->toDateString(),
+                                    'status'                    => 1,
+                                    'archived'                  => $archived
                                 ];
 
                             $lrsPackage->addLr($lrFirstArr, true);
@@ -699,16 +710,16 @@ class Btcextractor extends BasePackage
                                     try {
                                         $lrSecondArr =
                                             [
-                                                'id'                => $invoice['invdet']['lrno'],
-                                                'financial_year'    => $startYear . '-' . $endYear,
-                                                'invoice_no'        => $invoice['invdet']['invoiceno'],
-                                                'organisation_id'   => $organisation['id'],
-                                                'company_id'        => $company['id'],
-                                                'vehicle_id'        => ($vehicle && isset($vehicle['id'])) ? $vehicle['id'] : 0,
-                                                'date'              => $date->toDateString(),
-                                                'status'            => 1,
-                                                'archived'          => $archived,
-                                                'dev_notes'         => 'Invoice duplicate of LR: ' . $invoiceID[0] . '. Changed the invoice# to timestamp.'
+                                                'id'                        => $invoice['invdet']['lrno'],
+                                                'financial_year'            => $startYear . '-' . $endYear,
+                                                'invoice_no'                => $invoice['invdet']['invoiceno'],
+                                                'organisation_id'           => $organisation['id'],
+                                                'company_id'                => $company['id'],
+                                                'vehicle_id'                => ($vehicle && isset($vehicle['id'])) ? $vehicle['id'] : 0,
+                                                'date'                      => $date->toDateString(),
+                                                'status'                    => 1,
+                                                'archived'                  => $archived,
+                                                'invoice_internal_notes'    => 'Invoice duplicate of LR: ' . $invoiceID[0] . '. Changed the invoice# to timestamp.'
                                             ];
 
                                         $lrsPackage->addLr($lrSecondArr, true);
@@ -943,9 +954,15 @@ class Btcextractor extends BasePackage
                             $jobsChargesPackage = new \Apps\Tms\Packages\Jobs\Charges\JobsCharges;
 
                             $lrCharge = $jobsChargesPackage->getJobsChargesByLrnoAndChargesId($charge['lr_no'], $charge['charge_id']);
-                            // trace([$lrCharge]);
+
                             if (!$lrCharge) {
                                 try {
+                                    if ($chargeType === 'product') {
+                                        $charge['visibility'] = 3;
+                                    } else {
+                                        $charge['visibility'] = 2;
+                                    }
+
                                     $jobsChargesPackage->add($charge);
                                 } catch (\throwable $e) {
                                     $errors[$invoiceId]['jobChargeErrorMessage'] = $e->getMessage();
