@@ -690,7 +690,7 @@ class Btcextractor extends BasePackage
                                     'from_company_address_id'   => $company['id'],
                                     'to_company_address_id'     => $company['id'],
                                     'vehicle_id'                => ($vehicle && isset($vehicle['id'])) ? $vehicle['id'] : 0,
-                                    'date'                      => $date->toDateString(),
+                                    'date'                      => $date->format('d-m-Y'),
                                     'status'                    => 1,
                                     'archived'                  => $archived
                                 ];
@@ -716,10 +716,10 @@ class Btcextractor extends BasePackage
                                                 'organisation_id'           => $organisation['id'],
                                                 'company_id'                => $company['id'],
                                                 'vehicle_id'                => ($vehicle && isset($vehicle['id'])) ? $vehicle['id'] : 0,
-                                                'date'                      => $date->toDateString(),
+                                                'date'                      => $date->format('d-m-Y'),
                                                 'status'                    => 1,
                                                 'archived'                  => $archived,
-                                                'invoice_internal_notes'    => 'Invoice duplicate of LR: ' . $invoiceID[0] . '. Changed the invoice# to timestamp.'
+                                                'invoice_dev_notes'         => 'Invoice duplicate of LR: ' . $invoiceID[0] . '. Changed the invoice# to timestamp.'
                                             ];
 
                                         $lrsPackage->addLr($lrSecondArr, true);
