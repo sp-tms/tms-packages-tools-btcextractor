@@ -45,7 +45,7 @@ class Btcextractor extends BasePackage
         // Add Vehicle information from invoices.
         // $this->importVehicleFromInvoices();
         // Add LR information from invoices.
-        $this->importLrFromInvoices();
+        // $this->importLrFromInvoices();
         trace(['done']);
     }
 
@@ -451,7 +451,6 @@ class Btcextractor extends BasePackage
 
                         $companiesPackage->updateCompany($company);
                     }
-                    // trace([$company]);
                 }
             }
         } catch (FilesystemException | UnableToReadFile | \throwable $e) {
@@ -495,6 +494,7 @@ class Btcextractor extends BasePackage
 
                     if (!$vehicle) {
                         $vehiclesPackage->addVehicle([
+                            'organisation_id'   => 2,
                             'registration_no'   => $invoice['invdet']['vehicleno'],
                             'status'            => 0,
                             'archived'          => false
@@ -680,7 +680,7 @@ class Btcextractor extends BasePackage
 
                             $lrFirstArr =
                                 [
-                                    'id'                        => $invoice['invdet']['lrno'],
+                                    'lr_no'                     => $invoice['invdet']['lrno'],
                                     'financial_year'            => $startYear . '-' . $endYear,
                                     'invoice_no'                => $invoice['invdet']['invoiceno'],
                                     'organisation_id'           => $organisation['id'],
@@ -691,7 +691,7 @@ class Btcextractor extends BasePackage
                                     'to_company_address_id'     => $company['id'],
                                     'vehicle_id'                => ($vehicle && isset($vehicle['id'])) ? $vehicle['id'] : 0,
                                     'date'                      => $date->format('d-m-Y'),
-                                    'status'                    => 1,
+                                    'status'                    => 4,
                                     'archived'                  => $archived
                                 ];
 
@@ -710,14 +710,14 @@ class Btcextractor extends BasePackage
                                     try {
                                         $lrSecondArr =
                                             [
-                                                'id'                        => $invoice['invdet']['lrno'],
+                                                'lr_no'                     => $invoice['invdet']['lrno'],
                                                 'financial_year'            => $startYear . '-' . $endYear,
                                                 'invoice_no'                => $invoice['invdet']['invoiceno'],
                                                 'organisation_id'           => $organisation['id'],
                                                 'company_id'                => $company['id'],
                                                 'vehicle_id'                => ($vehicle && isset($vehicle['id'])) ? $vehicle['id'] : 0,
                                                 'date'                      => $date->format('d-m-Y'),
-                                                'status'                    => 1,
+                                                'status'                    => 4,
                                                 'archived'                  => $archived,
                                                 'invoice_dev_notes'         => 'Invoice duplicate of LR: ' . $invoiceID[0] . '. Changed the invoice# to timestamp.'
                                             ];
@@ -796,7 +796,7 @@ class Btcextractor extends BasePackage
                         if (!$chargeProduct) {
                             $newCharge = [];
                             $newCharge['name'] = $invoice['invdet']['product'];
-                            $newCharge['type'] = 0;
+                            $newCharge['type'] = 1;
                             $newCharge['description'] = $invoice['invdet']['product'];
                             $newCharge['archived'] = false;
 
@@ -824,7 +824,7 @@ class Btcextractor extends BasePackage
                         if (!$chargeDetention) {
                             $newCharge = [];
                             $newCharge['name'] = 'DETENTION';
-                            $newCharge['type'] = 1;
+                            $newCharge['type'] = 2;
                             $newCharge['description'] = 'DETENTION';
                             $newCharge['archived'] = false;
 
@@ -852,7 +852,7 @@ class Btcextractor extends BasePackage
                         if (!$chargeHamali) {
                             $newCharge = [];
                             $newCharge['name'] = 'HAMALI';
-                            $newCharge['type'] = 1;
+                            $newCharge['type'] = 2;
                             $newCharge['description'] = 'HAMALI';
                             $newCharge['archived'] = false;
 
@@ -879,7 +879,7 @@ class Btcextractor extends BasePackage
                             if (!$chargeMisc1) {
                                 $newCharge = [];
                                 $newCharge['name'] = $invoice['invdet']['miscdesc1'];
-                                $newCharge['type'] = 1;
+                                $newCharge['type'] = 2;
                                 $newCharge['description'] = $invoice['invdet']['miscdesc1'];
                                 $newCharge['archived'] = false;
 
@@ -904,7 +904,7 @@ class Btcextractor extends BasePackage
                             if (!$chargeMisc2) {
                                 $newCharge = [];
                                 $newCharge['name'] = $invoice['invdet']['miscdesc2'];
-                                $newCharge['type'] = 1;
+                                $newCharge['type'] = 2;
                                 $newCharge['description'] = $invoice['invdet']['miscdesc2'];
                                 $newCharge['archived'] = false;
 
@@ -929,7 +929,7 @@ class Btcextractor extends BasePackage
                             if (!$chargeMisc3) {
                                 $newCharge = [];
                                 $newCharge['name'] = $invoice['invdet']['miscdesc3'];
-                                $newCharge['type'] = 1;
+                                $newCharge['type'] = 2;
                                 $newCharge['description'] = $invoice['invdet']['miscdesc3'];
                                 $newCharge['archived'] = false;
 
